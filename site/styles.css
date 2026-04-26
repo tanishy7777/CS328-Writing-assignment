@@ -199,6 +199,57 @@ select {
   min-height: 390px;
 }
 
+.method-stats {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+  margin: 12px 0 16px;
+}
+
+.method-stat {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 12px;
+  background: #fbfcfd;
+}
+
+.method-stat span,
+.method-stat small {
+  color: var(--muted);
+  display: block;
+}
+
+.method-stat strong {
+  display: block;
+  font-size: 1.35rem;
+  margin: 4px 0 2px;
+}
+
+.cluster-table-wrap {
+  margin-top: 16px;
+  overflow-x: auto;
+}
+
+.cluster-table {
+  border-collapse: collapse;
+  min-width: 760px;
+  width: 100%;
+}
+
+.cluster-table th,
+.cluster-table td {
+  border-bottom: 1px solid var(--line);
+  padding: 10px 8px;
+  text-align: left;
+  vertical-align: top;
+}
+
+.cluster-table th {
+  color: var(--muted);
+  font-size: 0.78rem;
+  text-transform: uppercase;
+}
+
 .takeaway {
   border-top: 1px solid var(--line);
   margin-top: 28px;
@@ -216,6 +267,10 @@ select {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
+  .method-stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
   .chart-wrap {
     height: 520px;
   }
@@ -223,6 +278,10 @@ select {
 
 @media (max-width: 560px) {
   .summary-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .method-stats {
     grid-template-columns: 1fr;
   }
 

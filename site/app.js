@@ -6,6 +6,8 @@ const colors = {
   gold: "#c69214",
   ink: "#192026",
   gray: "#8a98a3",
+  green: "#4b7f52",
+  magenta: "#994f88",
 };
 
 const charts = {};
@@ -189,6 +191,189 @@ function renderTrend() {
   });
 }
 
+function methodStat(label, value, note = "") {
+  return `
+    <article class="method-stat">
+      <span>${label}</span>
+      <strong>${value}</strong>
+      <small>${note}</small>
+    </article>
+  `;
+}
+
+function renderHistogramMethod({ id, rows, label, xTitle, barColor, observed, lower, upper }) {
+  destroyChart("methods");
+  const datasets = [{
+    type: "bar",
+    label,
+    data: rows.map((row) => ({ x: row.x, y: row.count })),
+    backgroundColor: barColor,
+    borderWidth: 0,
+    barPercentage: 1,
+    categoryPercentage: 1,
+  }];
+
+  if (observed !== undefined) {
+    datasets.push({
+      type: "scatter",
+      label: "Observed statistic",
+      data: [{ x: observed, y: Math.max(...rows.map((row) => row.count)) * 0.96 }],
+      backgroundColor: colors.gold,
+      borderColor: colors.gold,
+      pointRadius: 7,
+    });
+  }
+
+  if (lower !== undefined && upper !== undefined) {
+    datasets.push({
+      type: "scatter",
+      label: "95% bounds",
+      data: [
+        { x: lower, y: Math.max(...rows.map((row) => row.count)) * 0.88 },
+        { x: upper, y: Math.max(...rows.map((row) => row.count)) * 0.88 },
+      ],
+      backgroundColor: colors.rust,
+      borderColor: colors.rust,
+      pointRadius: 6,
+    });
+  }
+
+  charts[id] = new Chart(document.querySelector("#methodChart"), {
+    type: "bar",
+    data: { datasets },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      interaction: { intersect: false, mode: "nearest" },
+      plugins: {
+        legend: { position: "bottom" },
+        tooltip: {
+          callbacks: {
+            label: (context) => `${context.dataset.label}: ${formatNumber.format(context.parsed.x)}, ${formatNumber.format(context.parsed.y)}`,
+          },
+        },
+      },
+      scales: {
+        x: {
+          type: "linear",
+          title: { display: true, text: xTitle },
+          grid: { color: "rgba(25,32,38,0.08)" },
+        },
+        y: {
+          title: { display: true, text: "Simulation count" },
+          grid: { color: "rgba(25,32,38,0.08)" },
+        },
+      },
+    },
+  });
+}
+
+function renderKMeans() {
+  const clusters = data.methods.kmeans;
+  const palette = [colors.blue, colors.rust, colors.teal, colors.violet];
+  const rows = clusters.points;
+  const tableWrap = document.querySelector("#clusterTableWrap");
+  tableWrap.hidden = false;
+  document.querySelector("#clusterTableBody").innerHTML = clusters.centers.map((row) => `
+    <tr>
+      <td>${row.cluster}: ${row.cluster_name}</td>
+      <td>${row.countries}</td>
+      <td>${formatNumber.format(row.avg_gdp_per_capita)}</td>
+      <td>${formatNumber.format(row.avg_energy_per_capita)}</td>
+      <td>${formatNumber.format(row.avg_co2_per_capita)}</td>
+      <td>${formatNumber.format(row.avg_co2_per_gdp)}</td>
+    </tr>
+  `).join("");
+
+  destroyChart("methods");
+  charts.methods = new Chart(document.querySelector("#methodChart"), {
+    type: "scatter",
+    data: {
+      datasets: [1, 2, 3, 4].map((clusterId, index) => {
+        const clusterRows = rows.filter((row) => row.cluster === clusterId);
+        return {
+          label: clusterRows[0]?.cluster_name || `Cluster ${clusterId}`,
+          data: clusterRows.map((row) => ({
+            x: row.gdp_per_capita,
+            y: row.co2_per_capita,
+            country: row.country,
+          })),
+          backgroundColor: palette[index],
+          borderColor: palette[index],
+          pointRadius: 4.5,
+        };
+      }),
+    },
+    options: scatterOptions("GDP per capita, log scale", "CO2 per capita, tonnes/person", true),
+  });
+}
+
+function renderMethods() {
+  const mode = document.querySelector("#methodMode").value;
+  document.querySelector("#clusterTableWrap").hidden = true;
+
+  if (mode === "permutation") {
+    const method = data.methods.permutation;
+    document.querySelector("#methodStats").innerHTML = [
+      methodStat("Observed gap", formatNumber.format(method.observed_diff), "high coal minus low coal"),
+      methodStat("p-value", formatNumber.format(method.p_value), "two-sided permutation test"),
+      methodStat("High-coal n", method.high_coal_n, "coal share >= 50%"),
+      methodStat("Low-coal n", method.low_coal_n, "coal share < 20%"),
+    ].join("");
+    renderHistogramMethod({
+      id: "methods",
+      rows: method.histogram,
+      label: "Null distribution",
+      xTitle: "Mean difference under shuffled labels",
+      barColor: "rgba(53, 109, 136, 0.72)",
+      observed: method.observed_diff,
+    });
+  } else if (mode === "bootstrap") {
+    const method = data.methods.bootstrap;
+    document.querySelector("#methodStats").innerHTML = [
+      methodStat("Observed gap", formatNumber.format(method.observed_diff), "kg CO2/kWh"),
+      methodStat("Lower bound", formatNumber.format(method.ci_low), "2.5th percentile"),
+      methodStat("Upper bound", formatNumber.format(method.ci_high), "97.5th percentile"),
+      methodStat("Interpretation", "positive", "interval stays above zero"),
+    ].join("");
+    renderHistogramMethod({
+      id: "methods",
+      rows: method.histogram,
+      label: "Bootstrap distribution",
+      xTitle: "Bootstrapped high-coal minus low-coal mean difference",
+      barColor: "rgba(180, 85, 63, 0.72)",
+      observed: method.observed_diff,
+      lower: method.ci_low,
+      upper: method.ci_high,
+    });
+  } else if (mode === "clt") {
+    const method = data.methods.clt;
+    document.querySelector("#methodStats").innerHTML = [
+      methodStat("Sample size", method.sample_size, "countries per resample"),
+      methodStat("Population mean", formatNumber.format(method.population_mean), "CO2/person"),
+      methodStat("Mean of means", formatNumber.format(method.sample_mean_mean), "simulation average"),
+      methodStat("Std. error", formatNumber.format(method.sample_mean_sd), "sampling spread"),
+    ].join("");
+    renderHistogramMethod({
+      id: "methods",
+      rows: method.histogram,
+      label: "Sample means",
+      xTitle: "Mean CO2 per capita from repeated samples",
+      barColor: "rgba(47, 111, 115, 0.72)",
+      observed: method.population_mean,
+    });
+  } else {
+    const method = data.methods.kmeans;
+    document.querySelector("#methodStats").innerHTML = [
+      methodStat("Clusters", method.k, "k-means"),
+      methodStat("Countries", method.points.length, "2022 complete cases"),
+      methodStat("Features", "4", "GDP, energy, CO2/person, CO2/GDP"),
+      methodStat("Purpose", "exploratory", "not causal"),
+    ].join("");
+    renderKMeans();
+  }
+}
+
 function scatterOptions(xLabel, yLabel, logX) {
   return {
     responsive: true,
@@ -250,11 +435,13 @@ async function init() {
   document.querySelector("#energyCountry").addEventListener("change", renderEnergy);
   document.querySelector("#tradeMode").addEventListener("change", renderTrade);
   document.querySelector("#trendMode").addEventListener("change", renderTrend);
+  document.querySelector("#methodMode").addEventListener("change", renderMethods);
 
   renderEconomy();
   renderEnergy();
   renderTrade();
   renderTrend();
+  renderMethods();
 
   if (window.lucide) {
     window.lucide.createIcons();

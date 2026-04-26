@@ -63,6 +63,10 @@
             <i data-lucide="line-chart"></i>
             Trends
           </button>
+          <button class="tab" type="button" data-panel="methods" role="tab" aria-selected="false">
+            <i data-lucide="sigma"></i>
+            Methods
+          </button>
         </div>
 
         <section class="panel active" id="panel-economy" data-panel="economy" role="tabpanel">
@@ -147,6 +151,43 @@
           </div>
           <div class="chart-wrap">
             <canvas id="trendChart"></canvas>
+          </div>
+        </section>
+
+        <section class="panel" id="panel-methods" data-panel="methods" role="tabpanel">
+          <div class="panel-copy">
+            <h2>Statistical checks make the story defensible</h2>
+            <p>The dashboard uses non-parametric tests and resampling because country emissions are skewed and outlier-heavy. K-means gives an exploratory grouping of country profiles, not a causal model.</p>
+          </div>
+          <div class="chart-toolbar">
+            <label>
+              Method
+              <select id="methodMode">
+                <option value="permutation">Permutation p-test</option>
+                <option value="bootstrap">Bootstrap bounds</option>
+                <option value="clt">CLT sample means</option>
+                <option value="kmeans">K-means clusters</option>
+              </select>
+            </label>
+          </div>
+          <div class="method-stats" id="methodStats" aria-label="Method statistics"></div>
+          <div class="chart-wrap">
+            <canvas id="methodChart"></canvas>
+          </div>
+          <div class="cluster-table-wrap" id="clusterTableWrap" hidden>
+            <table class="cluster-table">
+              <thead>
+                <tr>
+                  <th>Cluster</th>
+                  <th>Countries</th>
+                  <th>Avg GDP/person</th>
+                  <th>Avg energy/person</th>
+                  <th>Avg CO2/person</th>
+                  <th>Avg CO2/GDP</th>
+                </tr>
+              </thead>
+              <tbody id="clusterTableBody"></tbody>
+            </table>
           </div>
         </section>
       </section>
