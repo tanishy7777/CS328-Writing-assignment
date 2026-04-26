@@ -5,10 +5,10 @@ import test from "node:test";
 const root = new URL("../", import.meta.url);
 
 test("site renders the notebook itself", async () => {
-  const html = await readFile(new URL("site/index.html", root), "utf8");
-  const renderer = await readFile(new URL("site/notebook-render.js", root), "utf8");
+  const html = await readFile(new URL("docs/index.html", root), "utf8");
+  const renderer = await readFile(new URL("docs/notebook-render.js", root), "utf8");
   const notebook = JSON.parse(
-    await readFile(new URL("site/data/co2_assignment_starter.ipynb", root), "utf8"),
+    await readFile(new URL("docs/data/co2_assignment_starter.ipynb", root), "utf8"),
   );
 
   assert.match(html, /Loading notebook/);

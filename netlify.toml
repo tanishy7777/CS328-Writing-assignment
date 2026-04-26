@@ -1,8 +1,7 @@
 [build]
-  publish = "site"
+  publish = "docs"
 
 [[headers]]
   for = "/*"
   [headers.values]
     X-Content-Type-Options = "nosniff"
-

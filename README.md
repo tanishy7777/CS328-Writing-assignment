@@ -16,9 +16,9 @@ The analysis uses the Our World in Data CO2 dataset and keeps the claims observa
 
 - `notebooks/co2_assignment_starter.ipynb`
   The working notebook and main analysis artifact.
-- `site/`
-  Static site published by Netlify. It renders the notebook from `site/data/co2_assignment_starter.ipynb`.
-- `site/data/co2_assignment_starter.ipynb`
+- `docs/`
+  Static site published by GitHub Pages or Netlify. It renders the notebook from `docs/data/co2_assignment_starter.ipynb`.
+- `docs/data/co2_assignment_starter.ipynb`
   Published notebook copy used by the site.
 - `data/raw/owid-co2-data.csv`
   Raw OWID CO2 data.
@@ -40,12 +40,12 @@ jupyter notebook notebooks/co2_assignment_starter.ipynb
 
 ## Local Site Preview
 
-The Netlify site is published from `site/`, as configured in `netlify.toml`.
+The static site is published from `docs/`, which works with GitHub Pages and is also configured in `netlify.toml`.
 
 To preview it locally:
 
 ```powershell
-python -m http.server 4173 --directory site
+python -m http.server 4173 --directory docs
 ```
 
 Then open `http://localhost:4173`.
@@ -56,11 +56,11 @@ The project uses the Our World in Data CO2 repository as its main data source. D
 
 ## Deployment
 
-Netlify publishes the `site/` directory:
+Netlify publishes the `docs/` directory:
 
 ```toml
 [build]
-  publish = "site"
+  publish = "docs"
 ```
 
-That means changes to the published notebook copy or the files inside `site/` will affect the deployed webpage.
+That means changes to the published notebook copy or the files inside `docs/` will affect the deployed webpage.
