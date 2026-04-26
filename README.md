@@ -2,6 +2,8 @@
 
 This repository contains our CS 328 writing assignment on cross-country CO2 emissions. The main analysis lives in a notebook, and the published site renders that notebook directly so the narrative, code, figures, and outputs stay in one place.
 
+Web page: https://tanishy7777.github.io/CS328-Writing-assignment/
+
 ## Project Focus
 
 We study how national CO2 emissions differ across countries and how the answer changes depending on the metric. The notebook looks at three broad ideas:
