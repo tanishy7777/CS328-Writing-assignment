@@ -33,7 +33,9 @@ function pointColors(rows, selected, base) {
 
 function destroyChart(id) {
   if (charts[id]) {
+    charts[id].stop();
     charts[id].destroy();
+    delete charts[id];
   }
 }
 
@@ -415,13 +417,18 @@ function showPanel(name) {
   });
   const chart = charts[name];
   if (chart) {
-    setTimeout(() => chart.resize(), 0);
+    setTimeout(() => {
+      if (charts[name] === chart) {
+        chart.resize();
+      }
+    }, 0);
   }
 }
 
 async function init() {
   const response = await fetch("data/co2-dashboard.json");
   data = await response.json();
+  Chart.defaults.animation = false;
 
   countryOptions(document.querySelector("#economyCountry"), data.economy, "India");
   countryOptions(document.querySelector("#energyCountry"), data.energyUse, "India");
