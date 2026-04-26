@@ -4,26 +4,25 @@ import test from "node:test";
 
 const root = new URL("../", import.meta.url);
 
-test("dashboard exposes the full notebook hypothesis scope", async () => {
+test("site renders the notebook itself", async () => {
   const html = await readFile(new URL("site/index.html", root), "utf8");
-  const dashboard = JSON.parse(
-    await readFile(new URL("site/data/co2-dashboard.json", root), "utf8"),
+  const renderer = await readFile(new URL("site/notebook-render.js", root), "utf8");
+  const notebook = JSON.parse(
+    await readFile(new URL("site/data/co2_assignment_starter.ipynb", root), "utf8"),
   );
 
-  for (const label of ["H4 Land Use", "H5 History", "H6 Decoupling"]) {
-    assert.match(html, new RegExp(label));
-  }
+  assert.match(html, /Loading notebook/);
+  assert.match(html, /data\/co2_assignment_starter\.ipynb/);
+  assert.match(renderer, /fetch\("data\/co2_assignment_starter\.ipynb"\)/);
 
-  assert.ok(Array.isArray(dashboard.landUse), "landUse data is present");
-  assert.ok(Array.isArray(dashboard.historical), "historical data is present");
-  assert.ok(Array.isArray(dashboard.decoupling), "decoupling data is present");
+  assert.ok(Array.isArray(notebook.cells), "notebook cells are present");
+  assert.ok(notebook.cells.length >= 100, "full notebook is published");
 
-  assert.ok(dashboard.landUse.length >= 6, "land-use comparison has examples");
-  assert.ok(dashboard.historical.length >= 20, "historical responsibility has countries");
-  assert.ok(dashboard.decoupling.length >= 20, "decoupling data has countries");
+  const markdownCells = notebook.cells.filter((cell) => cell.cell_type === "markdown");
+  const codeWithOutputs = notebook.cells.filter(
+    (cell) => cell.cell_type === "code" && Array.isArray(cell.outputs) && cell.outputs.length > 0,
+  );
 
-  assert.equal(dashboard.meta.years.land_use, 2024);
-  assert.equal(dashboard.meta.years.historical, 2024);
-  assert.equal(dashboard.meta.years.decoupling_start, 1990);
-  assert.equal(dashboard.meta.years.decoupling_end, 2022);
+  assert.ok(markdownCells.length >= 20, "markdown narrative is present");
+  assert.ok(codeWithOutputs.length >= 10, "renderable notebook outputs are present");
 });
