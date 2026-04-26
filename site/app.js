@@ -509,14 +509,19 @@ function showPanel(name) {
   document.querySelectorAll(".panel").forEach((panel) => {
     panel.classList.toggle("active", panel.dataset.panel === name);
   });
-  const chart = charts[name];
-  if (chart) {
+
+  const chartNames = name === "responsibility" ? ["trade", "trend"] : [name];
+  chartNames.forEach((chartName) => {
+    const chart = charts[chartName];
+    if (!chart) {
+      return;
+    }
     setTimeout(() => {
-      if (charts[name] === chart) {
+      if (charts[chartName] === chart) {
         chart.resize();
       }
     }, 0);
-  }
+  });
 }
 
 async function init() {
