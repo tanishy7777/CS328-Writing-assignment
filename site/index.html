@@ -14,6 +14,7 @@
       <div>
         <p class="eyebrow">CS 328 Data Story</p>
         <h1>Economy, Energy Mix, and Responsibility in Global CO2 Emissions</h1>
+        <p class="header-deck">A guided dashboard for explaining why national CO2 responsibility cannot be reduced to one number.</p>
       </div>
       <a class="source-link" href="https://github.com/owid/co2-data" target="_blank" rel="noreferrer">
         <i data-lucide="database"></i>
@@ -22,26 +23,51 @@
     </header>
 
     <main>
+      <section class="story-lead" aria-label="Project thesis">
+        <div class="story-copy">
+          <p class="eyebrow">Main argument</p>
+          <h2>Wealth matters, but the emissions story needs three lenses.</h2>
+          <p>Richer countries usually emit more per person. But carbon intensity depends on the energy system, and responsibility changes when emissions are counted by consumption instead of only by production.</p>
+        </div>
+        <ol class="lens-list">
+          <li>
+            <span>1</span>
+            <strong>Economy</strong>
+            <small>Who has the income and demand to use more energy?</small>
+          </li>
+          <li>
+            <span>2</span>
+            <strong>Energy Mix</strong>
+            <small>How much CO2 is produced for each unit of energy?</small>
+          </li>
+          <li>
+            <span>3</span>
+            <strong>Responsibility</strong>
+            <small>Are emissions counted where goods are made or consumed?</small>
+          </li>
+        </ol>
+      </section>
+
       <section class="summary-grid" aria-label="Key findings">
         <article class="metric">
           <span>GDP vs CO2/person</span>
           <strong>r = 0.891</strong>
-          <small>2022 Spearman correlation</small>
+          <small>Rich countries generally emit more per resident.</small>
         </article>
         <article class="metric">
           <span>Energy vs CO2/person</span>
           <strong>r = 0.970</strong>
-          <small>2022 Spearman correlation</small>
+          <small>Energy demand is the strongest direct predictor.</small>
         </article>
         <article class="metric">
           <span>Coal intensity gap</span>
           <strong>0.106</strong>
-          <small>kg CO2/kWh, high minus low coal</small>
+          <small>kg CO2/kWh higher in coal-heavy systems.</small>
         </article>
         <article class="metric">
           <span>Trade accounting</span>
           <strong>+270%</strong>
-          <small>Switzerland consumption adjustment</small>
+          <small>Switzerland looks very different by consumption.</small>
         </article>
       </section>
 
@@ -74,6 +100,20 @@
             <h2>Economy raises individual footprint, but not efficiency by itself</h2>
             <p>GDP per capita strongly tracks CO2 per capita, while GDP per capita barely tracks CO2 per GDP. The richer-versus-poorer story is real, but incomplete.</p>
           </div>
+          <div class="explain-grid">
+            <article>
+              <span>Hypothesis</span>
+              <p>Higher GDP per person should be associated with higher emissions per person.</p>
+            </article>
+            <article>
+              <span>How to read this</span>
+              <p>Move left to right for richer countries. The vertical position shows either individual footprint or emissions per dollar of GDP.</p>
+            </article>
+            <article>
+              <span>Takeaway</span>
+              <p>The first view slopes upward strongly. The second view is much flatter, showing that wealth alone does not decide carbon efficiency.</p>
+            </article>
+          </div>
           <div class="chart-toolbar">
             <label>
               Y-axis
@@ -87,6 +127,7 @@
               <select id="economyCountry"></select>
             </label>
           </div>
+          <aside class="chart-note" id="economyReadout"></aside>
           <div class="chart-wrap">
             <canvas id="economyChart"></canvas>
           </div>
@@ -96,6 +137,20 @@
           <div class="panel-copy">
             <h2>Coal-heavy systems emit more CO2 for each unit of energy</h2>
             <p>Countries with coal above half of fossil CO2 have much higher carbon intensity than countries with low coal dependence. Energy demand matters, but fuel mix decides how dirty it becomes.</p>
+          </div>
+          <div class="explain-grid">
+            <article>
+              <span>Hypothesis</span>
+              <p>Coal-heavy countries should have higher CO2 intensity because coal releases more CO2 per unit of useful energy.</p>
+            </article>
+            <article>
+              <span>How to read this</span>
+              <p>The coal view compares fuel structure with energy intensity. The energy view compares total energy use with personal emissions.</p>
+            </article>
+            <article>
+              <span>Takeaway</span>
+              <p>Demand explains how much energy people use; fuel mix explains why similar demand can produce different emissions.</p>
+            </article>
           </div>
           <div class="chart-toolbar">
             <label>
@@ -110,6 +165,7 @@
               <select id="energyCountry"></select>
             </label>
           </div>
+          <aside class="chart-note" id="energyReadout"></aside>
           <div class="chart-wrap">
             <canvas id="energyChart"></canvas>
           </div>
@@ -119,6 +175,20 @@
           <div class="panel-copy">
             <h2>Consumption accounting changes who looks responsible</h2>
             <p>Importer economies can look cleaner under territorial accounting. Exporters and manufacturing-heavy economies often show the opposite pattern.</p>
+          </div>
+          <div class="explain-grid">
+            <article>
+              <span>Hypothesis</span>
+              <p>Production-based and consumption-based emissions should change which countries look more responsible.</p>
+            </article>
+            <article>
+              <span>How to read this</span>
+              <p>Positive bars mean consumption emissions are higher than territorial emissions. Negative bars mean a country produces more CO2 than its residents consume directly.</p>
+            </article>
+            <article>
+              <span>Takeaway</span>
+              <p>Territorial accounting tells where CO2 enters the atmosphere; consumption accounting shows who benefits from the goods behind it.</p>
+            </article>
           </div>
           <div class="chart-toolbar">
             <label>
@@ -130,6 +200,7 @@
               </select>
             </label>
           </div>
+          <aside class="chart-note" id="tradeReadout"></aside>
           <div class="chart-wrap">
             <canvas id="tradeChart"></canvas>
           </div>
@@ -140,6 +211,20 @@
             <h2>Emissions paths diverge after 1990</h2>
             <p>Germany and the United Kingdom fell to nearly half of their 1990 emissions by 2024, while China and India grew roughly fivefold. This is consistent with structural change, not proof of one cause.</p>
           </div>
+          <div class="explain-grid">
+            <article>
+              <span>Question</span>
+              <p>Do countries follow one common emissions path after industrialization?</p>
+            </article>
+            <article>
+              <span>How to read this</span>
+              <p>The index view makes countries comparable by setting each country to 100 in 1990. Values below 100 mean emissions fell.</p>
+            </article>
+            <article>
+              <span>Takeaway</span>
+              <p>Some wealthy countries reduced annual CO2, while rapidly industrializing countries increased sharply. The dataset shows divergence, not one simple cause.</p>
+            </article>
+          </div>
           <div class="chart-toolbar">
             <label>
               Measure
@@ -149,6 +234,7 @@
               </select>
             </label>
           </div>
+          <aside class="chart-note" id="trendReadout"></aside>
           <div class="chart-wrap">
             <canvas id="trendChart"></canvas>
           </div>
@@ -158,6 +244,20 @@
           <div class="panel-copy">
             <h2>Statistical checks make the story defensible</h2>
             <p>The dashboard uses non-parametric tests and resampling because country emissions are skewed and outlier-heavy. K-means gives an exploratory grouping of country profiles, not a causal model.</p>
+          </div>
+          <div class="explain-grid">
+            <article>
+              <span>Why methods matter</span>
+              <p>Country emissions are uneven and outlier-heavy, so the analysis should not rely only on chart shapes.</p>
+            </article>
+            <article>
+              <span>How to read this</span>
+              <p>Permutation asks whether the observed gap is surprising. Bootstrap estimates uncertainty. CLT shows sampling behavior. K-means summarizes profiles.</p>
+            </article>
+            <article>
+              <span>Takeaway</span>
+              <p>The coal-intensity result remains positive under resampling, and country profiles are more complex than a rich-versus-poor split.</p>
+            </article>
           </div>
           <div class="chart-toolbar">
             <label>
@@ -170,6 +270,7 @@
               </select>
             </label>
           </div>
+          <aside class="chart-note" id="methodReadout"></aside>
           <div class="method-stats" id="methodStats" aria-label="Method statistics"></div>
           <div class="chart-wrap">
             <canvas id="methodChart"></canvas>

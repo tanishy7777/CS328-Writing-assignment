@@ -14,6 +14,11 @@ const charts = {};
 let data;
 
 const formatNumber = new Intl.NumberFormat("en", { maximumFractionDigits: 2 });
+const formatWhole = new Intl.NumberFormat("en", { maximumFractionDigits: 0 });
+
+function setReadout(id, title, body) {
+  document.querySelector(id).innerHTML = `<strong>${title}</strong><span>${body}</span>`;
+}
 
 function countryOptions(select, rows, preferred) {
   const countries = [...new Set(rows.map((row) => row.country))].sort();
@@ -23,12 +28,24 @@ function countryOptions(select, rows, preferred) {
   select.value = countries.includes(preferred) ? preferred : countries[0];
 }
 
+function ensureCountrySelect(select, rows, fallback) {
+  const countries = new Set(rows.map((row) => row.country));
+  if (!countries.has(select.value)) {
+    countryOptions(select, rows, fallback);
+  }
+  return select.value;
+}
+
 function pointStyle(rows, selected) {
   return rows.map((row) => (row.country === selected ? 8 : 4));
 }
 
 function pointColors(rows, selected, base) {
   return rows.map((row) => (row.country === selected ? colors.gold : base));
+}
+
+function selectedRow(rows, selected) {
+  return rows.find((row) => row.country === selected) || rows[0];
 }
 
 function destroyChart(id) {
@@ -46,6 +63,21 @@ function renderEconomy() {
     ? "CO2 per capita, tonnes/person"
     : "CO2 per GDP, kg per international-$";
   const rows = data.economy.filter((row) => row.gdp_per_capita > 0 && row[mode] != null);
+  const row = selectedRow(rows, selected);
+
+  if (mode === "co2_per_capita") {
+    setReadout(
+      "#economyReadout",
+      `${row.country}: income and personal footprint`,
+      `GDP per person is ${formatWhole.format(row.gdp_per_capita)} international-$ and CO2 per person is ${formatNumber.format(row.co2_per_capita)} tonnes. This view supports H1A: richer countries usually sit higher on individual emissions.`
+    );
+  } else {
+    setReadout(
+      "#economyReadout",
+      `${row.country}: wealth is not the same as carbon efficiency`,
+      `GDP per person is ${formatWhole.format(row.gdp_per_capita)} international-$ and CO2 per GDP is ${formatNumber.format(row.co2_per_gdp)} kg per international-$. The flatter pattern shows why GDP alone cannot explain emissions intensity.`
+    );
+  }
 
   destroyChart("economy");
   charts.economy = new Chart(document.querySelector("#economyChart"), {
@@ -65,12 +97,28 @@ function renderEconomy() {
 
 function renderEnergy() {
   const mode = document.querySelector("#energyMode").value;
-  const selected = document.querySelector("#energyCountry").value;
+  const countrySelect = document.querySelector("#energyCountry");
   const rows = mode === "coal" ? data.energyMix : data.energyUse;
+  const selected = ensureCountrySelect(countrySelect, rows, "India");
   const xKey = mode === "coal" ? "coal_share" : "energy_per_capita";
   const yKey = mode === "coal" ? "co2_per_unit_energy" : "co2_per_capita";
   const xLabel = mode === "coal" ? "Coal share of coal+oil+gas CO2 (%)" : "Primary energy use per capita, kWh/person";
   const yLabel = mode === "coal" ? "CO2 per unit energy, kg/kWh" : "CO2 per capita, tonnes/person";
+  const row = selectedRow(rows, selected);
+
+  if (mode === "coal") {
+    setReadout(
+      "#energyReadout",
+      `${row.country}: fuel mix check`,
+      `Coal accounts for ${formatNumber.format(row.coal_share)}% of fossil CO2 in this filtered sample, and energy carbon intensity is ${formatNumber.format(row.co2_per_unit_energy)} kg CO2/kWh. Higher coal share generally pushes countries upward.`
+    );
+  } else {
+    setReadout(
+      "#energyReadout",
+      `${row.country}: demand check`,
+      `Energy use is ${formatWhole.format(row.energy_per_capita)} kWh per person and CO2 is ${formatNumber.format(row.co2_per_capita)} tonnes per person. This view shows why energy demand strongly predicts personal emissions.`
+    );
+  }
 
   destroyChart("energy");
   charts.energy = new Chart(document.querySelector("#energyChart"), {
@@ -103,6 +151,14 @@ function tradeRows() {
 
 function renderTrade() {
   const rows = tradeRows();
+  const mostPositive = [...rows].sort((a, b) => b.trade_co2_share - a.trade_co2_share)[0];
+  const mostNegative = [...rows].sort((a, b) => a.trade_co2_share - b.trade_co2_share)[0];
+  setReadout(
+    "#tradeReadout",
+    "Read positive and negative bars differently",
+    `${mostPositive.country} has the largest positive adjustment in this view (${formatNumber.format(mostPositive.trade_co2_share)}%), so consumption accounting raises its footprint. ${mostNegative.country} has the largest negative adjustment (${formatNumber.format(mostNegative.trade_co2_share)}%), so territorial production is higher than consumption.`
+  );
+
   destroyChart("trade");
   charts.trade = new Chart(document.querySelector("#tradeChart"), {
     type: "bar",
@@ -141,6 +197,24 @@ function renderTrend() {
   const mode = document.querySelector("#trendMode").value;
   const countries = [...new Set(data.trends.map((row) => row.country))].sort();
   const palette = [colors.blue, colors.rust, colors.teal, colors.violet, colors.gold, "#4b7f52", "#994f88", "#5d6f7f", "#a5652a"];
+  const latestYear = Math.max(...data.trends.map((row) => row.year));
+  const latestRows = data.trends.filter((row) => row.year === latestYear);
+  const largestDrop = [...latestRows].sort((a, b) => a.co2_index_1990_100 - b.co2_index_1990_100)[0];
+  const largestGrowth = [...latestRows].sort((a, b) => b.co2_index_1990_100 - a.co2_index_1990_100)[0];
+
+  if (mode === "index") {
+    setReadout(
+      "#trendReadout",
+      `Indexed to 1990 for fair comparison`,
+      `By ${latestYear}, ${largestDrop.country} is at ${formatNumber.format(largestDrop.co2_index_1990_100)} on the 1990=100 scale, while ${largestGrowth.country} is at ${formatNumber.format(largestGrowth.co2_index_1990_100)}. The point is divergence, not one universal pathway.`
+    );
+  } else {
+    setReadout(
+      "#trendReadout",
+      `Absolute emissions show scale`,
+      `In ${latestYear}, the largest annual emitter in this comparison is ${[...latestRows].sort((a, b) => b.co2 - a.co2)[0].country}. Use this view for scale, and the index view for change relative to each country's own 1990 baseline.`
+    );
+  }
 
   destroyChart("trend");
   charts.trend = new Chart(document.querySelector("#trendChart"), {
@@ -316,6 +390,11 @@ function renderMethods() {
 
   if (mode === "permutation") {
     const method = data.methods.permutation;
+    setReadout(
+      "#methodReadout",
+      "Permutation asks whether the coal gap could appear by random labeling",
+      `The observed high-coal minus low-coal gap is ${formatNumber.format(method.observed_diff)} kg CO2/kWh. A p-value of ${formatNumber.format(method.p_value)} means shuffled labels rarely produce a gap this large.`
+    );
     document.querySelector("#methodStats").innerHTML = [
       methodStat("Observed gap", formatNumber.format(method.observed_diff), "high coal minus low coal"),
       methodStat("p-value", formatNumber.format(method.p_value), "two-sided permutation test"),
@@ -332,6 +411,11 @@ function renderMethods() {
     });
   } else if (mode === "bootstrap") {
     const method = data.methods.bootstrap;
+    setReadout(
+      "#methodReadout",
+      "Bootstrap estimates uncertainty around the coal gap",
+      `The 95% interval runs from ${formatNumber.format(method.ci_low)} to ${formatNumber.format(method.ci_high)} kg CO2/kWh. Because the whole interval is above zero, the direction of the result is stable.`
+    );
     document.querySelector("#methodStats").innerHTML = [
       methodStat("Observed gap", formatNumber.format(method.observed_diff), "kg CO2/kWh"),
       methodStat("Lower bound", formatNumber.format(method.ci_low), "2.5th percentile"),
@@ -350,6 +434,11 @@ function renderMethods() {
     });
   } else if (mode === "clt") {
     const method = data.methods.clt;
+    setReadout(
+      "#methodReadout",
+      "The CLT check explains why sample means are still useful",
+      `Individual country emissions are skewed, but repeated samples of ${method.sample_size} countries produce a smoother distribution around ${formatNumber.format(method.population_mean)} tonnes per person.`
+    );
     document.querySelector("#methodStats").innerHTML = [
       methodStat("Sample size", method.sample_size, "countries per resample"),
       methodStat("Population mean", formatNumber.format(method.population_mean), "CO2/person"),
@@ -366,6 +455,11 @@ function renderMethods() {
     });
   } else {
     const method = data.methods.kmeans;
+    setReadout(
+      "#methodReadout",
+      "K-means summarizes country profiles",
+      `${method.points.length} countries are grouped into ${method.k} profiles using GDP, energy use, CO2 per person, and CO2 per GDP. These clusters describe patterns; they do not prove causality.`
+    );
     document.querySelector("#methodStats").innerHTML = [
       methodStat("Clusters", method.k, "k-means"),
       methodStat("Countries", method.points.length, "2022 complete cases"),
@@ -431,7 +525,7 @@ async function init() {
   Chart.defaults.animation = false;
 
   countryOptions(document.querySelector("#economyCountry"), data.economy, "India");
-  countryOptions(document.querySelector("#energyCountry"), data.energyUse, "India");
+  countryOptions(document.querySelector("#energyCountry"), data.energyMix, "India");
 
   document.querySelectorAll(".tab").forEach((button) => {
     button.addEventListener("click", () => showPanel(button.dataset.panel));
