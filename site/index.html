@@ -1,0 +1,160 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>CO2 Emissions Dashboard</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js" defer></script>
+    <script src="app.js" defer></script>
+  </head>
+  <body>
+    <header class="app-header">
+      <div>
+        <p class="eyebrow">CS 328 Data Story</p>
+        <h1>Economy, Energy Mix, and Responsibility in Global CO2 Emissions</h1>
+      </div>
+      <a class="source-link" href="https://github.com/owid/co2-data" target="_blank" rel="noreferrer">
+        <i data-lucide="database"></i>
+        OWID dataset
+      </a>
+    </header>
+
+    <main>
+      <section class="summary-grid" aria-label="Key findings">
+        <article class="metric">
+          <span>GDP vs CO2/person</span>
+          <strong>r = 0.891</strong>
+          <small>2022 Spearman correlation</small>
+        </article>
+        <article class="metric">
+          <span>Energy vs CO2/person</span>
+          <strong>r = 0.970</strong>
+          <small>2022 Spearman correlation</small>
+        </article>
+        <article class="metric">
+          <span>Coal intensity gap</span>
+          <strong>0.106</strong>
+          <small>kg CO2/kWh, high minus low coal</small>
+        </article>
+        <article class="metric">
+          <span>Trade accounting</span>
+          <strong>+270%</strong>
+          <small>Switzerland consumption adjustment</small>
+        </article>
+      </section>
+
+      <section class="tabs-shell">
+        <div class="tabs" role="tablist" aria-label="Dashboard sections">
+          <button class="tab active" type="button" data-panel="economy" role="tab" aria-selected="true">
+            <i data-lucide="circle-dollar-sign"></i>
+            Economy
+          </button>
+          <button class="tab" type="button" data-panel="energy" role="tab" aria-selected="false">
+            <i data-lucide="flame"></i>
+            Energy Mix
+          </button>
+          <button class="tab" type="button" data-panel="trade" role="tab" aria-selected="false">
+            <i data-lucide="shuffle"></i>
+            Trade
+          </button>
+          <button class="tab" type="button" data-panel="trend" role="tab" aria-selected="false">
+            <i data-lucide="line-chart"></i>
+            Trends
+          </button>
+        </div>
+
+        <section class="panel active" id="panel-economy" data-panel="economy" role="tabpanel">
+          <div class="panel-copy">
+            <h2>Economy raises individual footprint, but not efficiency by itself</h2>
+            <p>GDP per capita strongly tracks CO2 per capita, while GDP per capita barely tracks CO2 per GDP. The richer-versus-poorer story is real, but incomplete.</p>
+          </div>
+          <div class="chart-toolbar">
+            <label>
+              Y-axis
+              <select id="economyMode">
+                <option value="co2_per_capita">CO2 per capita</option>
+                <option value="co2_per_gdp">CO2 per GDP</option>
+              </select>
+            </label>
+            <label>
+              Highlight
+              <select id="economyCountry"></select>
+            </label>
+          </div>
+          <div class="chart-wrap">
+            <canvas id="economyChart"></canvas>
+          </div>
+        </section>
+
+        <section class="panel" id="panel-energy" data-panel="energy" role="tabpanel">
+          <div class="panel-copy">
+            <h2>Coal-heavy systems emit more CO2 for each unit of energy</h2>
+            <p>Countries with coal above half of fossil CO2 have much higher carbon intensity than countries with low coal dependence. Energy demand matters, but fuel mix decides how dirty it becomes.</p>
+          </div>
+          <div class="chart-toolbar">
+            <label>
+              View
+              <select id="energyMode">
+                <option value="coal">Coal share vs intensity</option>
+                <option value="energy">Energy/person vs CO2/person</option>
+              </select>
+            </label>
+            <label>
+              Highlight
+              <select id="energyCountry"></select>
+            </label>
+          </div>
+          <div class="chart-wrap">
+            <canvas id="energyChart"></canvas>
+          </div>
+        </section>
+
+        <section class="panel" id="panel-trade" data-panel="trade" role="tabpanel">
+          <div class="panel-copy">
+            <h2>Consumption accounting changes who looks responsible</h2>
+            <p>Importer economies can look cleaner under territorial accounting. Exporters and manufacturing-heavy economies often show the opposite pattern.</p>
+          </div>
+          <div class="chart-toolbar">
+            <label>
+              Countries
+              <select id="tradeMode">
+                <option value="extremes">Top importers and exporters</option>
+                <option value="importers">Top importers only</option>
+                <option value="exporters">Top exporters only</option>
+              </select>
+            </label>
+          </div>
+          <div class="chart-wrap">
+            <canvas id="tradeChart"></canvas>
+          </div>
+        </section>
+
+        <section class="panel" id="panel-trend" data-panel="trend" role="tabpanel">
+          <div class="panel-copy">
+            <h2>Emissions paths diverge after 1990</h2>
+            <p>Germany and the United Kingdom fell to nearly half of their 1990 emissions by 2024, while China and India grew roughly fivefold. This is consistent with structural change, not proof of one cause.</p>
+          </div>
+          <div class="chart-toolbar">
+            <label>
+              Measure
+              <select id="trendMode">
+                <option value="index">1990 = 100 index</option>
+                <option value="absolute">Annual CO2</option>
+              </select>
+            </label>
+          </div>
+          <div class="chart-wrap">
+            <canvas id="trendChart"></canvas>
+          </div>
+        </section>
+      </section>
+
+      <section class="takeaway">
+        <h2>Final argument</h2>
+        <p>National CO2 emissions are not explained by wealth alone. Economic development is associated with higher per-person emissions, but the final outcome depends on energy demand, coal dependence, trade accounting, and whether a country's emissions path is rising or falling.</p>
+      </section>
+    </main>
+  </body>
+</html>

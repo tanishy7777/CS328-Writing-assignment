@@ -4,4 +4,5 @@ __pycache__/
 .venv/
 venv/
 temp_previous_submission/
-
+.netlify/
+node_modules/

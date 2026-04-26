@@ -30,3 +30,15 @@ See `reports/hypotheses_and_worksplit.md` for the proposed hypotheses and three-
 python -m pip install -r requirements.txt
 jupyter notebook notebooks/co2_assignment_starter.ipynb
 ```
+
+## Interactive Webpage
+
+The Netlify site is a static dashboard in `site/`.
+
+Local preview:
+
+```powershell
+python -m http.server 4173 --directory site
+```
+
+Netlify publishes the `site/` directory, configured in `netlify.toml`.
