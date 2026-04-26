@@ -10,280 +10,351 @@
     <script src="app.js" defer></script>
   </head>
   <body>
-    <header class="app-header">
-      <div>
-        <p class="eyebrow">CS 328 Data Story</p>
-        <h1>Economy, Energy Mix, and Responsibility in Global CO2 Emissions</h1>
-        <p class="header-deck">An analysis of how wealth, energy systems, and trade accounting affect national CO2 emissions.</p>
+    <header class="hero">
+      <p class="eyebrow">CS 328 Data Story</p>
+      <h1>Economy, Energy Mix, and Responsibility in Global CO2 Emissions</h1>
+      <p class="lead">A blog-style walkthrough of the notebook analysis: why countries emit differently, why accounting choices change responsibility, and why economic growth does not automatically mean emissions fall.</p>
+      <div class="hero-actions" aria-label="Project sources">
+        <a href="https://github.com/owid/co2-data" target="_blank" rel="noreferrer">
+          <i data-lucide="database"></i>
+          OWID dataset
+        </a>
       </div>
-      <a class="source-link" href="https://github.com/owid/co2-data" target="_blank" rel="noreferrer">
-        <i data-lucide="database"></i>
-        OWID dataset
-      </a>
     </header>
 
     <main>
-      <section class="hypothesis-lead" aria-label="Hypothesis and project framing">
-        <div class="thesis-copy">
-          <p class="eyebrow">Central hypothesis</p>
-          <h2>National CO2 emissions are shaped by wealth, but the clearest differences come from energy demand, fuel mix, trade accounting, and structural change.</h2>
-          <p>The data can show strong patterns, but it cannot prove that one policy caused a specific country's emissions path. We use three linked hypotheses to keep the comparison focused.</p>
-        </div>
-        <div class="hypothesis-stack" aria-label="Three linked hypotheses">
-          <article>
-            <span>H1</span>
-            <div>
-              <strong>Economy</strong>
-              <p>Higher GDP per capita is associated with higher CO2 per capita, but GDP alone does not explain CO2 per GDP.</p>
-            </div>
-          </article>
-          <article>
-            <span>H2</span>
-            <div>
-              <strong>Energy mix</strong>
-              <p>Coal-heavy countries have higher CO2 intensity, while energy use per capita strongly predicts CO2 per capita.</p>
-            </div>
-          </article>
-          <article>
-            <span>H3</span>
-            <div>
-              <strong>Responsibility</strong>
-              <p>Production and consumption accounting change who looks responsible, and country emissions paths diverge after 1990.</p>
-            </div>
-          </article>
-        </div>
-      </section>
-
-      <section class="summary-grid" aria-label="Key findings">
-        <article class="metric">
-          <span>GDP vs CO2/person</span>
-          <strong>0.891</strong>
-          <small>Spearman r, 2022</small>
-        </article>
-        <article class="metric">
-          <span>Energy vs CO2/person</span>
-          <strong>0.970</strong>
-          <small>Spearman r, 2022</small>
-        </article>
-        <article class="metric">
-          <span>Coal intensity gap</span>
-          <strong>0.106</strong>
-          <small>kg CO2/kWh, high minus low coal</small>
-        </article>
-        <article class="metric">
-          <span>Trade accounting</span>
-          <strong>+270%</strong>
-          <small>Switzerland consumption adjustment</small>
-        </article>
-      </section>
-
-      <section class="methods-bridge" aria-label="Methods summary">
-        <div>
-          <p class="eyebrow">Methods</p>
-          <h2>We used rank correlation, permutation testing, bootstrap uncertainty, and exploratory clustering to check the main patterns.</h2>
-        </div>
-        <ul>
-          <li><strong>Spearman r</strong><span>handles skewed country rankings</span></li>
-          <li><strong>Permutation</strong><span>tests whether the coal gap is surprising</span></li>
-          <li><strong>Bootstrap</strong><span>estimates uncertainty without normality</span></li>
-          <li><strong>K-means</strong><span>summarizes country profiles, not causality</span></li>
-        </ul>
-      </section>
-
-      <section class="tabs-shell" aria-label="Hypothesis results">
-        <div class="tabs" role="tablist" aria-label="Hypothesis sections">
-          <button class="tab active" type="button" data-panel="economy" role="tab" aria-selected="true">
-            <i data-lucide="circle-dollar-sign"></i>
-            H1 Economy
-          </button>
-          <button class="tab" type="button" data-panel="energy" role="tab" aria-selected="false">
-            <i data-lucide="flame"></i>
-            H2 Energy Mix
-          </button>
-          <button class="tab" type="button" data-panel="responsibility" role="tab" aria-selected="false">
-            <i data-lucide="shuffle"></i>
-            H3 Responsibility
-          </button>
-        </div>
-
-        <section class="panel active" id="panel-economy" data-panel="economy" role="tabpanel">
-          <div class="panel-copy">
-            <p class="eyebrow">Hypothesis 1</p>
-            <h2>Economy raises individual footprint, but not carbon efficiency by itself.</h2>
-            <p>GDP per capita strongly tracks CO2 per capita, while GDP per capita barely tracks CO2 per GDP. The richer-versus-poorer story is real, but incomplete.</p>
-          </div>
-          <div class="claim-strip">
-            <article>
-              <span>Test</span>
-              <p>Compare GDP per capita with CO2 per capita and CO2 per GDP for countries above one million people.</p>
-            </article>
-            <article>
-              <span>Evidence</span>
-              <p>Spearman r is 0.891 for GDP versus CO2 per person, but only 0.083 for GDP versus CO2 per GDP.</p>
-            </article>
-            <article>
-              <span>Interpretation</span>
-              <p>Per-capita emissions measure individual footprint; CO2 per GDP measures production efficiency.</p>
-            </article>
-          </div>
-          <div class="chart-toolbar">
-            <label>
-              Y-axis
-              <select id="economyMode">
-                <option value="co2_per_capita">CO2 per capita</option>
-                <option value="co2_per_gdp">CO2 per GDP</option>
-              </select>
-            </label>
-            <label>
-              Highlight
-              <select id="economyCountry"></select>
-            </label>
-          </div>
-          <aside class="chart-note" id="economyReadout"></aside>
-          <div class="chart-wrap">
-            <canvas id="economyChart"></canvas>
-          </div>
+      <article class="story">
+        <section class="section-block" aria-labelledby="question-title">
+          <p class="eyebrow">Research question</p>
+          <h2 id="question-title">What actually explains national CO2 emissions?</h2>
+          <p>
+            The simple answer would be "rich countries emit more." The notebook shows that this is only the starting point. GDP per capita is strongly associated with CO2 per person, but the final emissions story also depends on energy use, coal dependence, imported consumption, land-use change, historical responsibility, and whether economic growth has separated from territorial CO2.
+          </p>
+          <p>
+            Because this is an observational country-year dataset, the analysis avoids claiming that one policy directly caused one country's path. Instead, it builds a careful descriptive argument: emissions are shaped by economic capacity, but national responsibility changes depending on whether we measure production, consumption, land use, history, or transition progress.
+          </p>
         </section>
 
-        <section class="panel" id="panel-energy" data-panel="energy" role="tabpanel">
-          <div class="panel-copy">
-            <p class="eyebrow">Hypothesis 2</p>
-            <h2>Energy demand predicts emissions, and coal decides how carbon-heavy that demand becomes.</h2>
-            <p>Countries with coal above half of fossil CO2 have much higher energy carbon intensity than low-coal countries. Cleaner energy mixes create important exceptions.</p>
-          </div>
-          <div class="claim-strip">
-            <article>
-              <span>Test</span>
-              <p>Compare coal share against CO2 per unit energy, then compare energy use per capita against CO2 per capita.</p>
-            </article>
-            <article>
-              <span>Evidence</span>
-              <p>High-coal countries average 0.106 kg CO2/kWh more than low-coal countries, with a bootstrap interval above zero.</p>
-            </article>
-            <article>
-              <span>Interpretation</span>
-              <p>Demand explains how much energy people use; fuel mix explains why similar demand can produce different emissions.</p>
-            </article>
-          </div>
-          <div class="chart-toolbar">
-            <label>
-              View
-              <select id="energyMode">
-                <option value="coal">Coal share vs intensity</option>
-                <option value="energy">Energy/person vs CO2/person</option>
-              </select>
-            </label>
-            <label>
-              Highlight
-              <select id="energyCountry"></select>
-            </label>
-          </div>
-          <aside class="chart-note" id="energyReadout"></aside>
-          <div class="chart-wrap">
-            <canvas id="energyChart"></canvas>
-          </div>
+        <section class="summary-grid" aria-label="Key findings">
+          <article class="metric">
+            <span>GDP vs CO2/person</span>
+            <strong>0.891</strong>
+            <small>Spearman r, 2022</small>
+          </article>
+          <article class="metric">
+            <span>Energy vs CO2/person</span>
+            <strong>0.970</strong>
+            <small>Spearman r, 2022</small>
+          </article>
+          <article class="metric">
+            <span>Coal intensity gap</span>
+            <strong>0.106</strong>
+            <small>kg CO2/kWh, high minus low coal</small>
+          </article>
+          <article class="metric">
+            <span>Trade accounting</span>
+            <strong>+270%</strong>
+            <small>Switzerland adjustment</small>
+          </article>
+          <article class="metric">
+            <span>Land-use adjustment</span>
+            <strong>+1,600</strong>
+            <small>Mt CO2 for Brazil, 2024</small>
+          </article>
+          <article class="metric">
+            <span>Absolute decoupling</span>
+            <strong>25%</strong>
+            <small>of matched countries, 1990-2022</small>
+          </article>
         </section>
 
-        <section class="panel" id="panel-responsibility" data-panel="responsibility" role="tabpanel">
-          <div class="panel-copy">
-            <p class="eyebrow">Hypothesis 3</p>
-            <h2>Responsibility changes with accounting method, and national trajectories split after 1990.</h2>
-            <p>Production-based accounting shows where CO2 enters the atmosphere. Consumption-based accounting shows who benefits from the goods behind those emissions. Time trends show structural divergence, not a single universal path.</p>
-          </div>
-          <div class="claim-strip">
-            <article>
-              <span>Test</span>
-              <p>Compare trade-adjusted emissions in 2023 and index selected countries to their 1990 emissions baseline.</p>
-            </article>
-            <article>
-              <span>Evidence</span>
-              <p>Switzerland, Singapore, and Belgium rise under consumption accounting, while exporters often move the other way.</p>
-            </article>
-            <article>
-              <span>Interpretation</span>
-              <p>The dataset supports careful structural claims; it does not prove that one policy caused one country's path.</p>
-            </article>
-          </div>
-          <div class="dual-chart-grid">
-            <article class="figure-panel">
-              <div class="chart-toolbar compact">
-                <label>
-                  Countries
-                  <select id="tradeMode">
-                    <option value="extremes">Top importers and exporters</option>
-                    <option value="importers">Top importers only</option>
-                    <option value="exporters">Top exporters only</option>
-                  </select>
-                </label>
-              </div>
-              <aside class="chart-note" id="tradeReadout"></aside>
-              <div class="chart-wrap split">
-                <canvas id="tradeChart"></canvas>
-              </div>
-            </article>
-            <article class="figure-panel">
-              <div class="chart-toolbar compact">
-                <label>
-                  Measure
-                  <select id="trendMode">
-                    <option value="index">1990 = 100 index</option>
-                    <option value="absolute">Annual CO2</option>
-                  </select>
-                </label>
-              </div>
-              <aside class="chart-note" id="trendReadout"></aside>
-              <div class="chart-wrap split">
-                <canvas id="trendChart"></canvas>
-              </div>
-            </article>
-          </div>
+        <section class="section-block" aria-labelledby="scope-title">
+          <p class="eyebrow">Data and scope</p>
+          <h2 id="scope-title">The dataset is broad, but each question needs its own clean sample.</h2>
+          <p>
+            The analysis uses the Our World in Data CO2 dataset, which includes country-year observations for territorial emissions, population, GDP, energy use, fuel-specific emissions, consumption-based emissions, cumulative CO2, and land-use change. The notebook first removes aggregate regions and obvious duplicate rows, then applies hypothesis-specific filters.
+          </p>
+          <p>
+            This local filtering matters. GDP coverage is strongest around 2022, trade-adjusted consumption data is broadest in 2023, and fuel or land-use variables extend to 2024. A single blanket missing-value rule would throw away useful evidence, so each hypothesis states its year and variables separately.
+          </p>
         </section>
-      </section>
 
-      <section class="methods-lab" aria-label="Methods appendix">
-        <div class="panel-copy">
-          <p class="eyebrow">Methods appendix</p>
-          <h2>Statistical checks</h2>
-          <p>These checks support the interpretation above and help avoid relying only on how the charts look.</p>
-        </div>
-        <div class="chart-toolbar">
-          <label>
-            Method
-            <select id="methodMode">
-              <option value="permutation">Permutation p-test</option>
-              <option value="bootstrap">Bootstrap bounds</option>
-              <option value="clt">CLT sample means</option>
-              <option value="kmeans">K-means clusters</option>
-            </select>
-          </label>
-        </div>
-        <aside class="chart-note" id="methodReadout"></aside>
-        <div class="method-stats" id="methodStats" aria-label="Method statistics"></div>
-        <div class="chart-wrap">
-          <canvas id="methodChart"></canvas>
-        </div>
-        <div class="cluster-table-wrap" id="clusterTableWrap" hidden>
-          <table class="cluster-table">
-            <thead>
-              <tr>
-                <th>Cluster</th>
-                <th>Countries</th>
-                <th>Avg GDP/person</th>
-                <th>Avg energy/person</th>
-                <th>Avg CO2/person</th>
-                <th>Avg CO2/GDP</th>
-              </tr>
-            </thead>
-            <tbody id="clusterTableBody"></tbody>
-          </table>
-        </div>
-      </section>
+        <section class="section-block" aria-labelledby="eda-title">
+          <p class="eyebrow">Exploratory analysis</p>
+          <h2 id="eda-title">The baseline is concentration, not equality.</h2>
+          <p>
+            Before testing hypotheses, the notebook checks the shape of the global problem. Total emissions are concentrated among a relatively small number of large national systems, while per-capita emissions tell a different story. Population explains some of the scale difference, but residuals show that size alone cannot explain national emissions.
+          </p>
+          <p>
+            The source-composition and correlation checks motivate the rest of the report: energy use, fuel mix, GDP, and accounting method are related, but they are not interchangeable. That is why the story moves through economy, energy systems, accounting, land use, historical responsibility, and decoupling.
+          </p>
+        </section>
 
-      <section class="takeaway">
-        <p class="eyebrow">Final argument</p>
-        <h2>A fair emissions interpretation needs all three lenses.</h2>
-        <p>Economic capacity helps explain who can consume more energy, fuel mix explains how carbon-intensive that energy is, and trade accounting shows who benefits from emissions that may occur somewhere else.</p>
-      </section>
+        <section class="section-block" aria-labelledby="foundation-title">
+          <p class="eyebrow">Part I: Foundation</p>
+          <h2 id="foundation-title">Economy raises footprint, but energy systems decide how carbon-heavy that footprint becomes.</h2>
+          <p>
+            H1 asks whether wealth explains emissions. In 2022, GDP per capita and CO2 per capita have a strong positive rank relationship. Richer countries usually have higher electricity use, transport demand, industrial output, heating and cooling, and consumption. This supports H1A.
+          </p>
+          <p>
+            H1B is the important caveat: GDP per capita barely tracks CO2 per GDP. A rich country is not automatically carbon-intensive per unit of output. Some high-income countries have cleaner electricity or more service-heavy economies, while some fossil-fuel-dependent economies emit much more for each unit of GDP.
+          </p>
+
+          <figure class="figure-block">
+            <figcaption>
+              <strong>H1 Economy.</strong>
+              Use the selector to compare personal footprint with production intensity. The point is that CO2 per capita and CO2 per GDP answer different questions.
+            </figcaption>
+            <div class="chart-toolbar">
+              <label>
+                Y-axis
+                <select id="economyMode">
+                  <option value="co2_per_capita">CO2 per capita</option>
+                  <option value="co2_per_gdp">CO2 per GDP</option>
+                </select>
+              </label>
+              <label>
+                Highlight
+                <select id="economyCountry"></select>
+              </label>
+            </div>
+            <aside class="chart-note" id="economyReadout"></aside>
+            <div class="chart-wrap">
+              <canvas id="economyChart"></canvas>
+            </div>
+          </figure>
+
+          <p>
+            H2 adds the mechanism. Energy use per person is extremely strongly associated with CO2 per person, but the fuel mix decides whether that energy demand becomes especially carbon-heavy. Countries where coal makes up at least half of fossil CO2 have much higher CO2 per unit energy than low-coal countries. Cleaner electricity systems create exceptions: a country can use substantial energy without having the same emissions intensity as a coal-heavy system.
+          </p>
+
+          <figure class="figure-block">
+            <figcaption>
+              <strong>H2 Energy mix.</strong>
+              Coal share explains carbon intensity, while total energy use explains the size of the personal footprint.
+            </figcaption>
+            <div class="chart-toolbar">
+              <label>
+                View
+                <select id="energyMode">
+                  <option value="coal">Coal share vs intensity</option>
+                  <option value="energy">Energy/person vs CO2/person</option>
+                </select>
+              </label>
+              <label>
+                Highlight
+                <select id="energyCountry"></select>
+              </label>
+            </div>
+            <aside class="chart-note" id="energyReadout"></aside>
+            <div class="chart-wrap">
+              <canvas id="energyChart"></canvas>
+            </div>
+          </figure>
+        </section>
+
+        <section class="section-block checks" aria-labelledby="checks-title">
+          <p class="eyebrow">Statistical checks</p>
+          <h2 id="checks-title">The checks support the story, but each one has a specific interpretation.</h2>
+          <p>
+            The notebook does not rely only on charts. It uses rank correlation, a permutation test, bootstrap uncertainty, a CLT simulation, and k-means clustering. These checks are descriptive safeguards: they make the visual patterns more defensible without turning the dataset into a causal experiment.
+          </p>
+          <ul class="interpretation-list">
+            <li><strong>Spearman correlation:</strong> GDP and energy variables are skewed, so rank correlation checks whether countries preserve a monotonic ordering rather than assuming a clean linear relationship.</li>
+            <li><strong>Permutation test:</strong> The coal gap is unlikely to appear if high-coal and low-coal labels were randomly assigned, so the fuel-mix result is not just a visual coincidence.</li>
+            <li><strong>Bootstrap interval:</strong> The high-coal minus low-coal intensity gap stays above zero across resamples, so the direction of the result is stable.</li>
+            <li><strong>CLT simulation:</strong> Country-level emissions are skewed, but repeated sample means are smoother. Averages are useful, but outliers still matter.</li>
+            <li><strong>K-means clustering:</strong> Countries fall into profiles such as low-income low-energy, middle-income carbon-intensive, high-energy transition mix, and high-income high-footprint. The clusters summarize structure; they do not prove causality.</li>
+          </ul>
+
+          <figure class="figure-block">
+            <figcaption>
+              <strong>Methods appendix.</strong>
+              Pick a check to see the statistic and its interpretation.
+            </figcaption>
+            <div class="chart-toolbar">
+              <label>
+                Method
+                <select id="methodMode">
+                  <option value="permutation">Permutation p-test</option>
+                  <option value="bootstrap">Bootstrap bounds</option>
+                  <option value="clt">CLT sample means</option>
+                  <option value="kmeans">K-means clusters</option>
+                </select>
+              </label>
+            </div>
+            <aside class="chart-note" id="methodReadout"></aside>
+            <div class="method-stats" id="methodStats" aria-label="Method statistics"></div>
+            <div class="chart-wrap">
+              <canvas id="methodChart"></canvas>
+            </div>
+            <div class="cluster-table-wrap" id="clusterTableWrap" hidden>
+              <table class="cluster-table">
+                <thead>
+                  <tr>
+                    <th>Cluster</th>
+                    <th>Countries</th>
+                    <th>Avg GDP/person</th>
+                    <th>Avg energy/person</th>
+                    <th>Avg CO2/person</th>
+                    <th>Avg CO2/GDP</th>
+                  </tr>
+                </thead>
+                <tbody id="clusterTableBody"></tbody>
+              </table>
+            </div>
+          </figure>
+        </section>
+
+        <section class="section-block" aria-labelledby="accounting-title">
+          <p class="eyebrow">Part II: Accounting</p>
+          <h2 id="accounting-title">Responsibility changes when the metric changes.</h2>
+          <p>
+            H3 shifts from emissions production to responsibility accounting. Territorial emissions count CO2 where it enters the atmosphere. Consumption-based emissions assign those emissions to the country whose residents consume the final goods. Switzerland, Singapore, and Belgium look very different under this lens because consumption emissions exceed territorial emissions.
+          </p>
+
+          <figure class="figure-block">
+            <figcaption>
+              <strong>H3 Trade accounting.</strong>
+              Positive values mean consumption emissions exceed territorial emissions; negative values mean production exceeds consumption.
+            </figcaption>
+            <div class="chart-toolbar">
+              <label>
+                Countries
+                <select id="tradeMode">
+                  <option value="extremes">Top importers and exporters</option>
+                  <option value="importers">Top importers only</option>
+                  <option value="exporters">Top exporters only</option>
+                </select>
+              </label>
+            </div>
+            <aside class="chart-note" id="tradeReadout"></aside>
+            <div class="chart-wrap">
+              <canvas id="tradeChart"></canvas>
+            </div>
+          </figure>
+
+          <p>
+            H4 adds land-use change. Fossil-fuel CO2 is not the only emissions pathway. In countries with major forest loss, peatland disturbance, agricultural expansion, or land restoration, CO2 including land-use change can be much higher or lower than fossil-only CO2. This does not replace the energy story; it prevents the report from pretending national emissions are only about industry and electricity.
+          </p>
+
+          <figure class="figure-block">
+            <figcaption>
+              <strong>H4 Land Use.</strong>
+              The chart compares fossil-only CO2 with the adjustment from land-use change.
+            </figcaption>
+            <div class="chart-toolbar">
+              <label>
+                Countries
+                <select id="landUseMode">
+                  <option value="extremes">Largest additions and reductions</option>
+                  <option value="additions">Largest additions only</option>
+                  <option value="reductions">Largest reductions only</option>
+                </select>
+              </label>
+            </div>
+            <aside class="chart-note" id="landUseReadout"></aside>
+            <div class="chart-wrap">
+              <canvas id="landUseChart"></canvas>
+            </div>
+          </figure>
+
+          <p>
+            H5 separates current annual emissions from cumulative historical responsibility. Current emissions identify where reductions matter now. Cumulative emissions ask who contributed most to the stock of atmospheric CO2. These questions overlap, but they are not identical, so a fair interpretation needs both.
+          </p>
+
+          <figure class="figure-block">
+            <figcaption>
+              <strong>H5 History.</strong>
+              Current-heavy countries have a larger present share than historical share; legacy-heavy countries show the opposite.
+            </figcaption>
+            <div class="chart-toolbar">
+              <label>
+                View
+                <select id="historyMode">
+                  <option value="scatter">Current vs cumulative shares</option>
+                  <option value="gap">Largest responsibility gaps</option>
+                </select>
+              </label>
+              <label>
+                Highlight
+                <select id="historyCountry"></select>
+              </label>
+            </div>
+            <aside class="chart-note" id="historyReadout"></aside>
+            <div class="chart-wrap">
+              <canvas id="historyChart"></canvas>
+            </div>
+          </figure>
+        </section>
+
+        <section class="section-block" aria-labelledby="transition-title">
+          <p class="eyebrow">Part III: Transition</p>
+          <h2 id="transition-title">Decoupling tests whether growth can separate from emissions.</h2>
+          <p>
+            H6 asks the hardest question in the notebook. A country can become richer while reducing CO2 per unit GDP, but this is only relative decoupling if total emissions still rise. Absolute decoupling is stricter: GDP grows while territorial CO2 falls.
+          </p>
+          <p>
+            From 1990 to 2022, many countries reduced carbon intensity, and many achieved relative decoupling. Absolute decoupling is less common. That distinction matters because efficiency gains help, but climate progress ultimately requires the absolute emissions curve to fall.
+          </p>
+
+          <figure class="figure-block">
+            <figcaption>
+              <strong>H6 Decoupling.</strong>
+              Compare GDP growth with CO2 growth, inspect intensity changes, or summarize the decoupling classes.
+            </figcaption>
+            <div class="chart-toolbar">
+              <label>
+                View
+                <select id="decouplingMode">
+                  <option value="growth">GDP growth vs CO2 growth</option>
+                  <option value="intensity">Largest intensity changes</option>
+                  <option value="summary">Class summary</option>
+                </select>
+              </label>
+              <label>
+                Highlight
+                <select id="decouplingCountry"></select>
+              </label>
+            </div>
+            <aside class="chart-note" id="decouplingReadout"></aside>
+            <div class="chart-wrap">
+              <canvas id="decouplingChart"></canvas>
+            </div>
+          </figure>
+
+          <figure class="figure-block">
+            <figcaption>
+              <strong>Trajectory context.</strong>
+              Indexed trends show that national emissions paths diverge after 1990.
+            </figcaption>
+            <div class="chart-toolbar">
+              <label>
+                Measure
+                <select id="trendMode">
+                  <option value="index">1990 = 100 index</option>
+                  <option value="absolute">Annual CO2</option>
+                </select>
+              </label>
+            </div>
+            <aside class="chart-note" id="trendReadout"></aside>
+            <div class="chart-wrap">
+              <canvas id="trendChart"></canvas>
+            </div>
+          </figure>
+        </section>
+
+        <section class="section-block conclusion" aria-labelledby="conclusion-title">
+          <p class="eyebrow">Conclusion</p>
+          <h2 id="conclusion-title">A fair emissions interpretation needs all six lenses.</h2>
+          <p>
+            National CO2 emissions are not explained by wealth alone. Economic development is associated with higher per-person emissions, but final responsibility depends on energy demand, fuel mix, trade accounting, land-use change, historical responsibility, and whether growth has actually separated from emissions.
+          </p>
+          <p>
+            A country can look high-emitting because it is populous, rich, energy-intensive, coal-heavy, export-oriented, import-dependent, land-use intensive, historically industrialized, or still developing. The strongest conclusion is therefore not a single-cause explanation. It is a layered interpretation: climate responsibility changes depending on which emissions question we ask.
+          </p>
+        </section>
+      </article>
     </main>
   </body>
 </html>

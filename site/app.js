@@ -267,6 +267,225 @@ function renderTrend() {
   });
 }
 
+function landUseRows() {
+  const mode = document.querySelector("#landUseMode").value;
+  const rows = [...data.landUse];
+  if (mode === "additions") {
+    return rows.sort((a, b) => b.luc_gap - a.luc_gap).slice(0, 12).reverse();
+  }
+  if (mode === "reductions") {
+    return rows.sort((a, b) => a.luc_gap - b.luc_gap).slice(0, 12).reverse();
+  }
+  return rows.sort((a, b) => a.luc_gap - b.luc_gap);
+}
+
+function renderLandUse() {
+  const rows = landUseRows();
+  const largestAddition = [...data.landUse].sort((a, b) => b.luc_gap - a.luc_gap)[0];
+  const largestReduction = [...data.landUse].sort((a, b) => a.luc_gap - b.luc_gap)[0];
+  setReadout(
+    "#landUseReadout",
+    "Land use can move the national total in either direction",
+    `${largestAddition.country} adds ${formatWhole.format(largestAddition.luc_gap)} million tonnes CO2 when land-use change is included. ${largestReduction.country} moves down by ${formatWhole.format(Math.abs(largestReduction.luc_gap))} million tonnes. This is why fossil-only CO2 is incomplete for some countries.`
+  );
+
+  destroyChart("landUse");
+  charts.landUse = new Chart(document.querySelector("#landUseChart"), {
+    type: "bar",
+    data: {
+      labels: rows.map((row) => row.country),
+      datasets: [{
+        label: "Land-use adjustment, million tonnes CO2",
+        data: rows.map((row) => row.luc_gap),
+        backgroundColor: rows.map((row) => row.luc_gap >= 0 ? colors.rust : colors.teal),
+      }],
+    },
+    options: horizontalBarOptions("Land-use adjustment, million tonnes CO2"),
+  });
+}
+
+function historyGapRows() {
+  const currentHeavy = [...data.historical]
+    .sort((a, b) => b.current_minus_cumulative_share_pct - a.current_minus_cumulative_share_pct)
+    .slice(0, 8);
+  const legacyHeavy = [...data.historical]
+    .sort((a, b) => a.current_minus_cumulative_share_pct - b.current_minus_cumulative_share_pct)
+    .slice(0, 8);
+  return [...legacyHeavy, ...currentHeavy].sort((a, b) => a.current_minus_cumulative_share_pct - b.current_minus_cumulative_share_pct);
+}
+
+function renderHistory() {
+  const mode = document.querySelector("#historyMode").value;
+  const selected = document.querySelector("#historyCountry").value;
+  const row = selectedRow(data.historical, selected);
+  const summary = data.summaries.historical;
+  setReadout(
+    "#historyReadout",
+    `${row.country}: current and historical shares`,
+    `Current share is ${formatNumber.format(row.current_share_pct)}% and cumulative share is ${formatNumber.format(row.cumulative_share_pct)}%. Across ${summary.countries} countries, the top 10 account for ${formatNumber.format(summary.top10_current_share_pct)}% of current CO2 and ${formatNumber.format(summary.top10_cumulative_share_pct)}% of cumulative CO2.`
+  );
+
+  destroyChart("history");
+  if (mode === "gap") {
+    const rows = historyGapRows();
+    charts.history = new Chart(document.querySelector("#historyChart"), {
+      type: "bar",
+      data: {
+        labels: rows.map((item) => item.country),
+        datasets: [{
+          label: "Current share minus cumulative share, percentage points",
+          data: rows.map((item) => item.current_minus_cumulative_share_pct),
+          backgroundColor: rows.map((item) => item.current_minus_cumulative_share_pct >= 0 ? colors.blue : colors.violet),
+        }],
+      },
+      options: horizontalBarOptions("Current minus cumulative share, percentage points"),
+    });
+    return;
+  }
+
+  charts.history = new Chart(document.querySelector("#historyChart"), {
+    type: "scatter",
+    data: {
+      datasets: [{
+        label: "Country shares",
+        data: data.historical.map((item) => ({
+          x: item.cumulative_share_pct,
+          y: item.current_share_pct,
+          country: item.country,
+        })),
+        backgroundColor: pointColors(data.historical, selected, colors.blue),
+        borderColor: pointColors(data.historical, selected, colors.blue),
+        pointRadius: pointStyle(data.historical, selected),
+      }],
+    },
+    options: scatterOptions("Cumulative CO2 share (%)", "Current annual CO2 share (%)", false),
+  });
+}
+
+function decouplingPalette(className) {
+  if (className === "absolute decoupling") return colors.teal;
+  if (className === "relative decoupling") return colors.blue;
+  if (className === "no decoupling with growth") return colors.rust;
+  return colors.gray;
+}
+
+function renderDecoupling() {
+  const mode = document.querySelector("#decouplingMode").value;
+  const selected = document.querySelector("#decouplingCountry").value;
+  const row = selectedRow(data.decoupling, selected);
+  const abs = data.summaries.decoupling.find((item) => item.decoupling_class === "absolute decoupling");
+  const rel = data.summaries.decoupling.find((item) => item.decoupling_class === "relative decoupling");
+  setReadout(
+    "#decouplingReadout",
+    `${row.country}: ${row.decoupling_class}`,
+    `GDP changed by ${formatNumber.format(row.gdp_growth_pct)}%, CO2 changed by ${formatNumber.format(row.co2_growth_pct)}%, and CO2/GDP intensity changed by ${formatNumber.format(row.intensity_change_pct)}%. Overall, ${formatNumber.format(abs.share_pct)}% absolutely decoupled and ${formatNumber.format(rel.share_pct)}% relatively decoupled.`
+  );
+
+  destroyChart("decoupling");
+  if (mode === "summary") {
+    const rows = data.summaries.decoupling;
+    charts.decoupling = new Chart(document.querySelector("#decouplingChart"), {
+      type: "bar",
+      data: {
+        labels: rows.map((item) => item.decoupling_class),
+        datasets: [{
+          label: "Share of matched countries (%)",
+          data: rows.map((item) => item.share_pct),
+          backgroundColor: rows.map((item) => decouplingPalette(item.decoupling_class)),
+        }],
+      },
+      options: verticalBarOptions("Share of matched countries (%)"),
+    });
+    return;
+  }
+
+  if (mode === "intensity") {
+    const lower = [...data.decoupling].sort((a, b) => a.intensity_change_pct - b.intensity_change_pct).slice(0, 10);
+    const higher = [...data.decoupling].sort((a, b) => b.intensity_change_pct - a.intensity_change_pct).slice(0, 10);
+    const rows = [...lower, ...higher].sort((a, b) => a.intensity_change_pct - b.intensity_change_pct);
+    charts.decoupling = new Chart(document.querySelector("#decouplingChart"), {
+      type: "bar",
+      data: {
+        labels: rows.map((item) => item.country),
+        datasets: [{
+          label: "CO2/GDP intensity change (%)",
+          data: rows.map((item) => item.intensity_change_pct),
+          backgroundColor: rows.map((item) => item.intensity_change_pct <= 0 ? colors.teal : colors.rust),
+        }],
+      },
+      options: horizontalBarOptions("CO2/GDP intensity change, 1990-2022 (%)"),
+    });
+    return;
+  }
+
+  const classes = [...new Set(data.decoupling.map((item) => item.decoupling_class))];
+  charts.decoupling = new Chart(document.querySelector("#decouplingChart"), {
+    type: "scatter",
+    data: {
+      datasets: classes.map((className) => {
+        const rows = data.decoupling.filter((item) => item.decoupling_class === className);
+        return {
+          label: className,
+          data: rows.map((item) => ({
+            x: item.gdp_growth_pct,
+            y: item.co2_growth_pct,
+            country: item.country,
+          })),
+          backgroundColor: rows.map((item) => item.country === selected ? colors.gold : decouplingPalette(className)),
+          borderColor: rows.map((item) => item.country === selected ? colors.gold : decouplingPalette(className)),
+          pointRadius: rows.map((item) => item.country === selected ? 8 : 4),
+        };
+      }),
+    },
+    options: scatterOptions("GDP growth, 1990-2022 (%)", "CO2 growth, 1990-2022 (%)", false),
+  });
+}
+
+function horizontalBarOptions(xTitle) {
+  return {
+    responsive: true,
+    maintainAspectRatio: false,
+    indexAxis: "y",
+    plugins: {
+      legend: { display: false },
+      tooltip: {
+        callbacks: {
+          label: (context) => `${formatNumber.format(context.raw)}`,
+        },
+      },
+    },
+    scales: {
+      x: {
+        title: { display: true, text: xTitle },
+        grid: { color: "rgba(25,32,38,0.08)" },
+      },
+      y: { grid: { display: false } },
+    },
+  };
+}
+
+function verticalBarOptions(yTitle) {
+  return {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: { display: false },
+      tooltip: {
+        callbacks: {
+          label: (context) => `${formatNumber.format(context.raw)}%`,
+        },
+      },
+    },
+    scales: {
+      x: { grid: { display: false } },
+      y: {
+        title: { display: true, text: yTitle },
+        grid: { color: "rgba(25,32,38,0.08)" },
+      },
+    },
+  };
+}
+
 function methodStat(label, value, note = "") {
   return `
     <article class="method-stat">
@@ -531,6 +750,8 @@ async function init() {
 
   countryOptions(document.querySelector("#economyCountry"), data.economy, "India");
   countryOptions(document.querySelector("#energyCountry"), data.energyMix, "India");
+  countryOptions(document.querySelector("#historyCountry"), data.historical, "United States");
+  countryOptions(document.querySelector("#decouplingCountry"), data.decoupling, "United Kingdom");
 
   document.querySelectorAll(".tab").forEach((button) => {
     button.addEventListener("click", () => showPanel(button.dataset.panel));
@@ -541,12 +762,20 @@ async function init() {
   document.querySelector("#energyCountry").addEventListener("change", renderEnergy);
   document.querySelector("#tradeMode").addEventListener("change", renderTrade);
   document.querySelector("#trendMode").addEventListener("change", renderTrend);
+  document.querySelector("#landUseMode").addEventListener("change", renderLandUse);
+  document.querySelector("#historyMode").addEventListener("change", renderHistory);
+  document.querySelector("#historyCountry").addEventListener("change", renderHistory);
+  document.querySelector("#decouplingMode").addEventListener("change", renderDecoupling);
+  document.querySelector("#decouplingCountry").addEventListener("change", renderDecoupling);
   document.querySelector("#methodMode").addEventListener("change", renderMethods);
 
   renderEconomy();
   renderEnergy();
   renderTrade();
   renderTrend();
+  renderLandUse();
+  renderHistory();
+  renderDecoupling();
   renderMethods();
 
   if (window.lucide) {
