@@ -107,7 +107,7 @@ main {
   display: grid;
   grid-template-columns: minmax(0, 1.05fr) minmax(320px, 0.95fr);
   gap: 18px;
-  align-items: stretch;
+  align-items: start;
   margin-bottom: 18px;
 }
 
@@ -154,6 +154,7 @@ main {
   display: inline-flex;
   font-size: 0.86rem;
   font-weight: 900;
+  grid-row: 1 / span 2;
   height: 30px;
   justify-content: center;
   width: 30px;
@@ -162,6 +163,7 @@ main {
 .lens-list strong,
 .lens-list small {
   display: block;
+  grid-column: 2;
 }
 
 .lens-list small {
